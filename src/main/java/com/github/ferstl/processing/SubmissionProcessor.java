@@ -75,11 +75,7 @@ public class SubmissionProcessor implements Closeable {
     public void run() {
       while (!Thread.currentThread().isInterrupted()) {
         if (this.tailer.nextIndex()) {
-          try {
-            this.message.readMarshallable(this.tailer);
-          } catch (Exception e) {
-            e.printStackTrace();
-          }
+          this.message.readMarshallable(this.tailer);
           System.out.println(this.message.getData());
         }
       }
