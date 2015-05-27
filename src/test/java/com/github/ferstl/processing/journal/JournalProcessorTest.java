@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.github.ferstl.processing.ProcessingConfiguration;
+import com.github.ferstl.processing.SubmissionProcessor;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = ProcessingConfiguration.class)
@@ -21,17 +22,22 @@ public class JournalProcessorTest {
   @Autowired
   private Supplier<BlockingQueue<String>> inboundQueueSupplier;
 
+  @Autowired
+  private SubmissionProcessor submissionProcessor;
+
   private BlockingQueue<String> inboundQueue;
 
   @Before
   public void before() {
     this.inboundQueue = this.inboundQueueSupplier.get();
     this.inboundProcessor.start();
+    this.submissionProcessor.start();
   }
 
   @After
   public void after() {
     this.inboundProcessor.stop();
+    this.submissionProcessor.stop();
   }
 
   @Test
