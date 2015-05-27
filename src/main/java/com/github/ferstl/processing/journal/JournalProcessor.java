@@ -72,10 +72,12 @@ public class JournalProcessor implements Closeable {
 
     private final BlockingQueue<String> messageQueue;
     private final ExcerptAppender appender;
+    private final Message message;
 
     public JournalingTask(BlockingQueue<String> messageQueue, ExcerptAppender appender) {
       this.messageQueue = messageQueue;
       this.appender = appender;
+      this.message = new Message();
     }
 
 
@@ -96,10 +98,9 @@ public class JournalProcessor implements Closeable {
     private void journal() throws InterruptedException {
       String data = this.messageQueue.take();
       this.appender.startExcerpt(data.length() + 100);
-      Message message = new Message();
-      message.newCorrelationId();
-      message.setData(data);
-      message.writeMarshallable(this.appender);
+      this.message.newCorrelationId();
+      this.message.setData(data);
+      this.message.writeMarshallable(this.appender);
       this.appender.finish();
     }
 
