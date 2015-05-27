@@ -1,4 +1,4 @@
-package com.github.ferstl.processing.journal;
+package com.github.ferstl.processing;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.function.Supplier;
@@ -11,6 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.github.ferstl.processing.ProcessingConfiguration;
 import com.github.ferstl.processing.SubmissionProcessor;
+import com.github.ferstl.processing.journal.JournalProcessor;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = ProcessingConfiguration.class)
