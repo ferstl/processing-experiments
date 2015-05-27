@@ -15,7 +15,7 @@ import com.github.ferstl.processing.journal.JournalProcessor;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = ProcessingConfiguration.class)
-public class JournalProcessorTest {
+public class ProcessingTest {
 
   @Autowired
   private JournalProcessor inboundProcessor;
