@@ -35,9 +35,19 @@ public class ProcessingConfiguration {
     return () -> queue;
   }
 
+  // TODO: Find a better place to hold the chronicles
   @Bean
-  public Chronicle inboundJournal() throws IOException {
+  public Chronicle inboundJournal() {
     String inboundJournal = this.env.getProperty("inbound.journal");
-    return ChronicleQueueBuilder.indexed(new File(inboundJournal)).synchronous(false).messageCapacity(10000).build();
+    try {
+      return ChronicleQueueBuilder.indexed(new File(inboundJournal)).synchronous(false).messageCapacity(10000).build();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Bean
+  public SubmissionProcessor submissionProcessor() {
+    return new SubmissionProcessor(inboundJournal());
   }
 }
