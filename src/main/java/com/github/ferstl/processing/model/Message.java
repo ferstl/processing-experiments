@@ -35,6 +35,7 @@ public class Message implements BytesMarshallable {
   public void writeMarshallable(Bytes out) {
     out.writeLong(this.correlationId.getMostSignificantBits());
     out.writeLong(this.correlationId.getLeastSignificantBits());
+    out.writeUTF(this.data);
   }
 
 }
