@@ -9,6 +9,7 @@
   </appender>
   
   <logger name = "org.springframework" level="WARN" />
+  <logger name = "net.openhft" level="DEBUG" />
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />
