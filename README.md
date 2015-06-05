@@ -16,3 +16,7 @@ Not much to see here...
 [ ] System states
 [ ] System generated messages
 [ ] UI
+
+## Further Enhancements
+[ ] Reliability: Continue processing if one of your server explodes
+[ ] 24/7 availability: no down time at a client's perspective
