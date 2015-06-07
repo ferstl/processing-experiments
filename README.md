@@ -9,14 +9,14 @@ Not much to see here...
 - Processing recovers from persisted data if the application crashes or is restarted
 
 ## Things to do
-[ ] Submission: parse/validate/acknowledge (persistent)
-[ ] Settlement (irrevocable)
-[ ] Delivery
-[ ] Handle predated value dates
-[ ] System states
-[ ] System generated messages
-[ ] UI
+- [ ] Submission: parse/validate/acknowledge (persistent)
+- [ ] Settlement (irrevocable)
+- [ ] Delivery
+- [ ] Handle predated value dates
+- [ ] System states
+- [ ] System generated messages
+- [ ] UI
 
 ## Further Enhancements
-[ ] Reliability: Continue processing if one of your server explodes
-[ ] 24/7 availability: no down time at a client's perspective
+- [ ] Reliability: Continue processing if one of your server explodes
+- [ ] 24/7 availability: no down time at a client's perspective
