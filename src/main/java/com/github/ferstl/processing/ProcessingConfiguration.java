@@ -48,7 +48,10 @@ public class ProcessingConfiguration {
   public Chronicle inboundJournal() {
     String inboundJournal = this.env.getProperty("inbound.journal");
     try {
-      return ChronicleQueueBuilder.indexed(new File(inboundJournal)).synchronous(false).messageCapacity(10000).build();
+      return ChronicleQueueBuilder
+          .indexed(new File(inboundJournal))
+          .synchronous(false)
+          .build();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
