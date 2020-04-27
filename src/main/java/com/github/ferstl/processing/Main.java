@@ -1,12 +1,9 @@
 package com.github.ferstl.processing;
 
-import java.time.Instant;
-import java.util.UUID;
-import com.github.ferstl.processing.Message.Metadata;
+import java.time.Duration;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.util.DaemonThreadFactory;
-import static java.nio.charset.StandardCharsets.US_ASCII;
 
 public class Main {
 
@@ -25,14 +22,20 @@ public class Main {
     // Get the ring buffer from the Disruptor to be used for publishing.
     RingBuffer<Message> ringBuffer = disruptor.start();
 
-    for (long l = 0; l < 1000; l++) {
-      ringBuffer.publishEvent((event, sequence, buffer) -> {
-        event.setMetadata(new Metadata(Instant.now(), UUID.randomUUID()));
-        event.setData(("Message " + System.currentTimeMillis()).getBytes(US_ASCII));
-      });
+    MessageService messageService = new MessageService();
+    MessageProducer messageProducer = new MessageProducer(messageService);
+
+    long startTime = System.currentTimeMillis();
+    for (long l = 0; l < 10000; l++) {
+      ringBuffer.publishEvent((event, sequence, producer) -> {
+        producer.producePayment(event);
+      }, messageProducer);
     }
 
     disruptor.shutdown();
+    Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
     journalingService.close();
+
+    System.out.println("Processing took " + duration);
   }
 }

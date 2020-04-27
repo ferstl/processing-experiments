@@ -26,7 +26,6 @@ public class JournalingService implements AutoCloseable {
 
   @Override
   public void close() {
-    System.out.println(this.queue.dump());
     this.queue.close();
   }
 }
