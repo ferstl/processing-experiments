@@ -1,0 +1,5 @@
+<payment>
+  <debtorAccount>12345</debtorAccount>
+  <creditorAccount>56789</creditorAccount>
+  <amount>100.25</amount>
+</payment>
