@@ -15,14 +15,17 @@ public class Main {
     Disruptor<Message> disruptor = new Disruptor<>(Message::new, bufferSize, DaemonThreadFactory.INSTANCE);
 
     JournalingService journalingService = new JournalingService();
-    // Connect the handler
-    disruptor.handleEventsWith((message, sequence, endOfBatch) -> journalingService.writeMessage(message));
+    MessageService messageService = new MessageService();
+    // Connect the handlers
+    disruptor.handleEventsWith(
+        (message, sequence, endOfBatch) -> journalingService.writeMessage(message),
+        (message, sequence, endOfBatch) -> message.setParsedMessage(messageService.readPayment(message.getData()))
+    );
 
     // Start the Disruptor, starts all threads running
     // Get the ring buffer from the Disruptor to be used for publishing.
     RingBuffer<Message> ringBuffer = disruptor.start();
 
-    MessageService messageService = new MessageService();
     MessageProducer messageProducer = new MessageProducer(messageService);
 
     long startTime = System.currentTimeMillis();

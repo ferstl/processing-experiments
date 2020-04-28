@@ -2,11 +2,13 @@ package com.github.ferstl.processing;
 
 import java.time.Instant;
 import java.util.UUID;
+import com.github.ferstl.processing.model.Payment;
 
 public class Message {
 
   private Metadata metadata;
   private byte[] data;
+  private Payment payment;
 
   public void setData(byte[] data) {
     this.data = data;
@@ -22,6 +24,14 @@ public class Message {
 
   public void setMetadata(Metadata metadata) {
     this.metadata = metadata;
+  }
+
+  public Payment getPayment() {
+    return this.payment;
+  }
+
+  public void setParsedMessage(Payment payment) {
+    this.payment = payment;
   }
 
   public void clear() {
