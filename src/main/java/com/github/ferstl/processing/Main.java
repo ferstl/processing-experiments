@@ -1,5 +1,6 @@
 package com.github.ferstl.processing;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import com.github.ferstl.processing.model.Payment;
 import com.lmax.disruptor.RingBuffer;
@@ -44,7 +45,12 @@ public class Main {
     disruptor.shutdown();
     Duration duration = Duration.ofMillis(System.currentTimeMillis() - startTime);
     journalingService.close();
-
     System.out.println("Processing took " + duration);
+
+    BigDecimal totalBalance = accountingService.getTotalBalance();
+    if (BigDecimal.ZERO.compareTo(totalBalance) != 0) {
+      throw new IllegalStateException("Invalid balance at the end of processing " + totalBalance);
+    }
+
   }
 }

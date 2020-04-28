@@ -6,7 +6,7 @@ import java.util.Random;
 import org.jetbrains.annotations.NotNull;
 import com.github.ferstl.processing.Message.Metadata;
 import com.github.ferstl.processing.model.Payment;
-import static com.github.ferstl.processing.AccountMasterdata.getAccountsAsArray;
+import static com.github.ferstl.processing.AccountMasterdata.getRegularAccountsAsArray;
 import static java.util.UUID.randomUUID;
 
 public class MessageProducer {
@@ -22,7 +22,7 @@ public class MessageProducer {
   public MessageProducer(MessageService messageService) {
     this.messageService = messageService;
     this.random = new Random(42);
-    this.accounts = getAccountsAsArray();
+    this.accounts = getRegularAccountsAsArray();
 
     int[] integers = this.random.ints(100, 10000)
         .limit(NR_OF_AMOUNTS)
