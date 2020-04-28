@@ -1,6 +1,7 @@
 package com.github.ferstl.processing;
 
 import java.time.Duration;
+import com.github.ferstl.processing.model.Payment;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.util.DaemonThreadFactory;
@@ -16,11 +17,16 @@ public class Main {
 
     JournalingService journalingService = new JournalingService();
     MessageService messageService = new MessageService();
+    AccountingService accountingService = new AccountingService();
     // Connect the handlers
-    disruptor.handleEventsWith(
-        (message, sequence, endOfBatch) -> journalingService.writeMessage(message),
-        (message, sequence, endOfBatch) -> message.setParsedMessage(messageService.readPayment(message.getData()))
-    );
+    disruptor
+        .handleEventsWith(
+            (message, sequence, endOfBatch) -> journalingService.writeMessage(message),
+            (message, sequence, endOfBatch) -> message.setParsedMessage(messageService.readPayment(message.getData()))
+        ).then((message, sequence, endOfBatch) -> {
+      Payment payment = message.getPayment();
+      accountingService.transfer(payment.getDebtorAccount(), payment.getCreditorAccount(), payment.getAmount());
+    });
 
     // Start the Disruptor, starts all threads running
     // Get the ring buffer from the Disruptor to be used for publishing.
