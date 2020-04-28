@@ -23,11 +23,11 @@ public class Main {
     disruptor
         .handleEventsWith(
             (message, sequence, endOfBatch) -> journalingService.writeMessage(message),
-            (message, sequence, endOfBatch) -> message.setParsedMessage(messageService.readPayment(message.getData()))
-        ).then((message, sequence, endOfBatch) -> {
-      Payment payment = message.getPayment();
-      accountingService.transfer(payment.getDebtorAccount(), payment.getCreditorAccount(), payment.getAmount());
-    });
+            (message, sequence, endOfBatch) -> message.setParsedMessage(messageService.readPayment(message.getData())))
+        .then((message, sequence, endOfBatch) -> {
+          Payment payment = message.getPayment();
+          accountingService.transfer(payment.getDebtorAccount(), payment.getCreditorAccount(), payment.getAmount());
+        });
 
     // Start the Disruptor, starts all threads running
     // Get the ring buffer from the Disruptor to be used for publishing.
