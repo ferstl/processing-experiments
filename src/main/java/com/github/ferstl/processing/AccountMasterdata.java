@@ -11,10 +11,15 @@ public final class AccountMasterdata {
 
   static {
     Random random = new Random(42);
-    ACCOUNTS = random.ints(50000, 70000)
+    ACCOUNTS = random.ints(50000, 90000)
         .limit(NR_OF_ACCOUNTS)
+        .distinct()
         .mapToObj(Integer::toString)
         .toArray(String[]::new);
+
+    if (ACCOUNTS.length != NR_OF_ACCOUNTS) {
+      throw new IllegalStateException("The number of accounts does not match the expected value of " + NR_OF_ACCOUNTS);
+    }
   }
 
   public static List<String> getAccounts() {
