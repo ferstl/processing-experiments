@@ -1,7 +1,5 @@
-.classpath
-.project
 .idea/
 target/
+src/main/java/com/github/ferstl/processing/aeron/
+node*/
 *.iml
-.settings/org.eclipse.core.resources.prefs
-.settings/org.eclipse.jdt.apt.core.prefs
