@@ -8,7 +8,7 @@ import static com.github.ferstl.processing.AccountMasterdata.getRegularAccountsA
 public class AccountUtil {
 
   private static final int NR_OF_AMOUNTS = 10000;
-  private static final String[] accounts;
+  private static final int[] accounts;
   private static final String[] amounts;
   private static final Random random;
 
@@ -35,7 +35,7 @@ public class AccountUtil {
     return new BigDecimal(amounts[random.nextInt(amounts.length)]);
   }
 
-  public static String randomAccount() {
+  public static int randomAccount() {
     return accounts[random.nextInt(accounts.length)];
   }
 

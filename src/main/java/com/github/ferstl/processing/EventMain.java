@@ -1,5 +1,6 @@
 package com.github.ferstl.processing;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 import com.github.ferstl.processing.event.MessageInEvent;
 import com.github.ferstl.processing.event.MessageOutEvent;
@@ -14,6 +15,8 @@ import static java.util.UUID.randomUUID;
 
 public class EventMain {
 
+  private static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
+
   public static void main(String[] args) {
     MessageService messageService = new MessageService();
     MessageProducer messageProducer = new MessageProducer(messageService);
@@ -22,14 +25,13 @@ public class EventMain {
 
     for (int i = 0; i < 10_000; i++) {
       // Outside world
-      byte[] data = messageService.writePayment(new Payment(randomAccount(), randomAccount(), randomAmount()));
-
+      byte[] data = messageService.writePayment(new Payment(Integer.toString(randomAccount()), Integer.toString(randomAccount()), randomAmount()));
 
       UUID uuid = randomUUID();
       eventService.publishEvent(new MessageInEvent(uuid, PAYMENT, data));
 
       Payment payment = messageProducer.producePayment(data);
-      accountingService.transfer(payment.getDebtorAccount(), payment.getCreditorAccount(), payment.getAmount());
+      accountingService.transfer(Integer.parseInt(payment.getDebtorAccount()), Integer.parseInt(payment.getCreditorAccount()), payment.getAmount().multiply(ONE_HUNDRED).longValue());
       eventService.publishEvent(new PaymentEvent(uuid, payment.getDebtorAccount(), payment.getCreditorAccount(), payment.getAmount()));
 
       eventService.publishEvent(new MessageOutEvent(uuid, CREDITOR_FINAL, data));

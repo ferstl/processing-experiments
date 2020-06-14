@@ -18,11 +18,11 @@ public class MessageProducer {
   }
 
   public void producePayment(Message message) {
-    String debtorAccount = randomAccount();
-    String creditorAccount = randomAccount();
+    int debtorAccount = randomAccount();
+    int creditorAccount = randomAccount();
     BigDecimal amount = randomAmount();
 
-    byte[] paymentData = this.messageService.writePayment(new Payment(debtorAccount, creditorAccount, amount));
+    byte[] paymentData = this.messageService.writePayment(new Payment(Integer.toString(debtorAccount), Integer.toString(creditorAccount), amount));
     message.setData(paymentData);
     message.setMetadata(new Metadata(Instant.now(), randomUUID()));
   }

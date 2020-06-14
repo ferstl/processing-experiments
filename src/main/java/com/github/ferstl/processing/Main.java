@@ -9,6 +9,8 @@ import com.lmax.disruptor.util.DaemonThreadFactory;
 
 public class Main {
 
+  private static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
+
   public static void main(String[] args) throws Exception {
     // Specify the size of the ring buffer, must be power of 2.
     int bufferSize = 1024;
@@ -26,7 +28,7 @@ public class Main {
             (message, sequence, endOfBatch) -> message.setParsedMessage(messageService.readPayment(message.getData())))
         .then((message, sequence, endOfBatch) -> {
           Payment payment = message.getPayment();
-          accountingService.transfer(payment.getDebtorAccount(), payment.getCreditorAccount(), payment.getAmount());
+          accountingService.transfer(Integer.parseInt(payment.getDebtorAccount()), Integer.parseInt(payment.getCreditorAccount()), payment.getAmount().multiply(ONE_HUNDRED).longValue());
         });
 
     // Start the Disruptor, starts all threads running
@@ -47,8 +49,8 @@ public class Main {
     journalingService.close();
     System.out.println("Processing took " + duration);
 
-    BigDecimal totalBalance = accountingService.getTotalBalance();
-    if (BigDecimal.ZERO.compareTo(totalBalance) != 0) {
+    long totalBalance = accountingService.getTotalBalance();
+    if (totalBalance != 0) {
       throw new IllegalStateException("Invalid balance at the end of processing " + totalBalance);
     }
 
