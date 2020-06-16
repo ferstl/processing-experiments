@@ -2,6 +2,7 @@ package com.github.ferstl.processing;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.UUID;
 import com.github.ferstl.processing.model.Payment;
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
@@ -28,7 +29,7 @@ public class Main {
             (message, sequence, endOfBatch) -> message.setParsedMessage(messageService.readPayment(message.getData())))
         .then((message, sequence, endOfBatch) -> {
           Payment payment = message.getPayment();
-          accountingService.transfer(Integer.parseInt(payment.getDebtorAccount()), Integer.parseInt(payment.getCreditorAccount()), payment.getAmount().multiply(ONE_HUNDRED).longValue());
+          accountingService.reserve(UUID.randomUUID(), Integer.parseInt(payment.getDebtorAccount()), Integer.parseInt(payment.getCreditorAccount()), payment.getAmount().multiply(ONE_HUNDRED).longValue());
         });
 
     // Start the Disruptor, starts all threads running

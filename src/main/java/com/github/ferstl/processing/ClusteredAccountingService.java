@@ -47,7 +47,11 @@ public class ClusteredAccountingService implements ClusteredService {
   @Override
   public void onSessionMessage(ClientSession session, long timestamp, DirectBuffer buffer, int offset, int length, Header header) {
     SettlementEvent settlementEvent = SettlementEvent.deserialize(buffer, offset);
-    this.accountingService.transfer(settlementEvent.getDebtorAccount(), settlementEvent.getCreditorAccount(), settlementEvent.getAmount());
+    this.accountingService.reserve(
+        settlementEvent.getCorrelationId(),
+        settlementEvent.getDebtorAccount(),
+        settlementEvent.getCreditorAccount(),
+        settlementEvent.getAmount());
 
     System.out.println("Received " + settlementEvent.getCorrelationId());
     // session == null: recovery

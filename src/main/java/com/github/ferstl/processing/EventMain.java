@@ -31,7 +31,7 @@ public class EventMain {
       eventService.publishEvent(new MessageInEvent(uuid, PAYMENT, data));
 
       Payment payment = messageProducer.producePayment(data);
-      accountingService.transfer(Integer.parseInt(payment.getDebtorAccount()), Integer.parseInt(payment.getCreditorAccount()), payment.getAmount().multiply(ONE_HUNDRED).longValue());
+      accountingService.reserve(uuid, Integer.parseInt(payment.getDebtorAccount()), Integer.parseInt(payment.getCreditorAccount()), payment.getAmount().multiply(ONE_HUNDRED).longValue());
       eventService.publishEvent(new PaymentEvent(uuid, payment.getDebtorAccount(), payment.getCreditorAccount(), payment.getAmount()));
 
       eventService.publishEvent(new MessageOutEvent(uuid, CREDITOR_FINAL, data));

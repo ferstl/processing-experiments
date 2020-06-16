@@ -2,13 +2,18 @@ package com.github.ferstl.processing;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import static com.github.ferstl.processing.AccountingStatus.RESERVATION_NOT_FOUND;
+import static com.github.ferstl.processing.AccountingStatus.SETTLED;
 import static java.util.stream.Collectors.toMap;
 
 public class AccountingService {
 
   private final Map<Integer, Long> accountBook;
+  private final Map<UUID, Reservation> reservations;
 
   public AccountingService() {
+    this.reservations = new HashMap<>();
     this.accountBook = AccountMasterdata.getRegularAccounts().stream()
         .collect(toMap(
             key -> key,
@@ -26,9 +31,29 @@ public class AccountingService {
     }
   }
 
-  public void transfer(int debtor, int creditor, long amount) {
-    this.accountBook.put(debtor, this.accountBook.get(debtor) - amount);
-    this.accountBook.put(creditor, this.accountBook.get(creditor) + amount);
+  public AccountingResult reserve(UUID correlationId, int debtor, int creditor, long amount) {
+    Long totalAmount = this.accountBook.get(debtor);
+    long newAmount = totalAmount - amount;
+    if (newAmount >= 0) {
+      this.accountBook.put(debtor, newAmount);
+      this.reservations.put(correlationId, new Reservation(debtor, creditor, amount));
+      return new AccountingResult(correlationId, AccountingStatus.RESERVATION_OK);
+    } else {
+      return new AccountingResult(correlationId, AccountingStatus.INSUFFICIENT_FUNDS);
+    }
+  }
+
+  public AccountingResult settle(UUID correlationId) {
+    Reservation reservation = this.reservations.get(correlationId);
+    if (reservation == null) {
+      return new AccountingResult(correlationId, RESERVATION_NOT_FOUND);
+    }
+
+    int creditorAccount = reservation.getCreditorAccount();
+    Long creditorAmount = this.accountBook.get(creditorAccount);
+    this.accountBook.put(creditorAccount, creditorAmount + reservation.getAmount());
+
+    return new AccountingResult(correlationId, SETTLED);
   }
 
   public long getTotalBalance() {
