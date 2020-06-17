@@ -4,7 +4,7 @@ import org.agrona.DirectBuffer;
 import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.IdleStrategy;
-import com.github.ferstl.processing.event.SettlementEvent;
+import com.github.ferstl.processing.event.ReservationEvent;
 import com.github.ferstl.processing.event.SettlementResponse;
 import io.aeron.ExclusivePublication;
 import io.aeron.Image;
@@ -46,17 +46,17 @@ public class ClusteredAccountingService implements ClusteredService {
 
   @Override
   public void onSessionMessage(ClientSession session, long timestamp, DirectBuffer buffer, int offset, int length, Header header) {
-    SettlementEvent settlementEvent = SettlementEvent.deserialize(buffer, offset);
+    ReservationEvent reservationEvent = ReservationEvent.deserialize(buffer, offset);
     this.accountingService.reserve(
-        settlementEvent.getCorrelationId(),
-        settlementEvent.getDebtorAccount(),
-        settlementEvent.getCreditorAccount(),
-        settlementEvent.getAmount());
+        reservationEvent.getCorrelationId(),
+        reservationEvent.getDebtorAccount(),
+        reservationEvent.getCreditorAccount(),
+        reservationEvent.getAmount());
 
-    System.out.println("Received " + settlementEvent.getCorrelationId());
+    System.out.println("Received " + reservationEvent.getCorrelationId());
     // session == null: recovery
     if (session != null) {
-      SettlementResponse settlementResponse = new SettlementResponse(settlementEvent.getCorrelationId(), true);
+      SettlementResponse settlementResponse = new SettlementResponse(reservationEvent.getCorrelationId(), true);
       settlementResponse.serialize(this.responseBuffer, 0);
 
       while (session.offer(this.responseBuffer, 0, settlementResponse.getSerializedLength()) < 0) {

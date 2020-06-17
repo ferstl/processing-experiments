@@ -16,7 +16,7 @@ class SettlementResponseTests {
     ExpandableArrayBuffer buffer = new ExpandableArrayBuffer();
     response.serialize(buffer, 0);
 
-    SettlementEvent deserialized = SettlementEvent.deserialize(buffer, 0);
+    ReservationEvent deserialized = ReservationEvent.deserialize(buffer, 0);
 
     assertEquals(correlationId, deserialized.getCorrelationId());
     assertTrue(response.isSettled());

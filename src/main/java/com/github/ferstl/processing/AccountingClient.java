@@ -9,7 +9,7 @@ import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.BackoffIdleStrategy;
 import org.agrona.concurrent.IdleStrategy;
-import com.github.ferstl.processing.event.SettlementEvent;
+import com.github.ferstl.processing.event.ReservationEvent;
 import com.github.ferstl.processing.event.SettlementResponse;
 import io.aeron.cluster.client.AeronCluster;
 import io.aeron.cluster.client.EgressListener;
@@ -60,16 +60,16 @@ public class AccountingClient implements EgressListener {
   }
 
   private void settle(AeronCluster cluster) {
-    SettlementEvent settlementEvent = new SettlementEvent(UUID.randomUUID(), AccountUtil.randomAccount(), AccountUtil.randomAccount(), AccountUtil.randomAmount().multiply(ONE_HUNDRED).longValue());
-    settlementEvent.serialize(this.sendBuffer, 0);
+    ReservationEvent reservationEvent = new ReservationEvent(UUID.randomUUID(), AccountUtil.randomAccount(), AccountUtil.randomAccount(), AccountUtil.randomAmount().multiply(ONE_HUNDRED).longValue());
+    reservationEvent.serialize(this.sendBuffer, 0);
 
     System.out.println(String.format("-> Sending message %s: %06d --- %d --> %06d",
-        settlementEvent.getCorrelationId(),
-        settlementEvent.getDebtorAccount(),
-        settlementEvent.getAmount(),
-        settlementEvent.getCreditorAccount()) + " " + Thread.currentThread().getName());
+        reservationEvent.getCorrelationId(),
+        reservationEvent.getDebtorAccount(),
+        reservationEvent.getAmount(),
+        reservationEvent.getCreditorAccount()) + " " + Thread.currentThread().getName());
 
-    while (cluster.offer(this.sendBuffer, 0, settlementEvent.getSerializedLength()) < 0) {
+    while (cluster.offer(this.sendBuffer, 0, reservationEvent.getSerializedLength()) < 0) {
       this.idleStrategy.idle(cluster.pollEgress());
     }
 
