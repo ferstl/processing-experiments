@@ -10,22 +10,22 @@ class ReservationEventTests {
   @Test
   void serializeAndDeserialize() {
     UUID correlationId = UUID.randomUUID();
-    ReservationEvent event = new ReservationEvent(correlationId, 1, 2, 500);
+    ReservationEvent event = new ReservationEvent(correlationId, 24798, 24799, 500);
 
     ExpandableArrayBuffer buffer = new ExpandableArrayBuffer();
-    event.serialize(buffer, 0);
+    event.serialize(buffer, 42);
 
-    ReservationEvent deserialized = ReservationEvent.deserialize(buffer, 0);
+    ReservationEvent deserialized = ReservationEvent.deserialize(buffer, 42);
 
     assertEquals(correlationId, deserialized.getCorrelationId());
-    assertEquals(1, event.getDebtorAccount());
-    assertEquals(2, event.getCreditorAccount());
+    assertEquals(24798, event.getDebtorAccount());
+    assertEquals(24799, event.getCreditorAccount());
     assertEquals(500, event.getAmount());
   }
 
   @Test
   void getSerializedLength() {
-    ReservationEvent event = new ReservationEvent(UUID.randomUUID(), 1, 2, 100);
-    assertEquals(3, event.getSerializedLength());
+    ReservationEvent event = new ReservationEvent(UUID.randomUUID(), 24798, 24799, 100);
+    assertEquals(32, event.getSerializedLength());
   }
 }

@@ -28,14 +28,14 @@ public class ReservationEvent extends ProcessingEvent {
   public static ReservationEvent deserialize(DirectBuffer buffer, int offset) {
     UUID correlationId = new UUID(buffer.getLong(offset + CORRELATION_ID_PART1_OFFSET), buffer.getLong(offset + CORRELATION_ID_PART2_OFFSET));
 
-    return new ReservationEvent(correlationId, buffer.getInt(offset + DEBTOR_ACCOUNT_OFFSET), buffer.getInt(offset + CREDITOR_ACCOUNT_OFFSET), 0);
+    return new ReservationEvent(correlationId, buffer.getInt(offset + DEBTOR_ACCOUNT_OFFSET), buffer.getInt(offset + CREDITOR_ACCOUNT_OFFSET), buffer.getLong(offset + AMOUNT_OFFSET));
   }
 
   public void serialize(MutableDirectBuffer buffer, int offset) {
     buffer.putLong(offset + CORRELATION_ID_PART1_OFFSET, getCorrelationId().getMostSignificantBits());
     buffer.putLong(offset + CORRELATION_ID_PART2_OFFSET, getCorrelationId().getLeastSignificantBits());
-    buffer.putLong(offset + DEBTOR_ACCOUNT_OFFSET, this.debtorAccount);
-    buffer.putLong(offset + CREDITOR_ACCOUNT_OFFSET, this.creditorAccount);
+    buffer.putInt(offset + DEBTOR_ACCOUNT_OFFSET, this.debtorAccount);
+    buffer.putInt(offset + CREDITOR_ACCOUNT_OFFSET, this.creditorAccount);
     buffer.putLong(offset + AMOUNT_OFFSET, this.amount);
   }
 
