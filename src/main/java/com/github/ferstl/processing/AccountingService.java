@@ -33,6 +33,11 @@ public class AccountingService {
 
   public AccountingResult reserve(UUID correlationId, int debtor, int creditor, long amount) {
     Long totalAmount = this.accountBook.get(debtor);
+    if (totalAmount == null) {
+      System.out.println("debtor: " + debtor);
+      return new AccountingResult(correlationId, AccountingStatus.UNKNOWN_ACCOUNT);
+    }
+
     long newAmount = totalAmount - amount;
     if (newAmount >= 0) {
       this.accountBook.put(debtor, newAmount);

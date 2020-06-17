@@ -9,6 +9,7 @@ import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.BackoffIdleStrategy;
 import org.agrona.concurrent.IdleStrategy;
+import com.github.ferstl.processing.event.EventType;
 import com.github.ferstl.processing.event.ReservationEvent;
 import com.github.ferstl.processing.event.SettlementResponse;
 import io.aeron.cluster.client.AeronCluster;
@@ -44,7 +45,7 @@ public class AccountingClient implements EgressListener {
                 .ingressChannel("aeron:udp")
                 .ingressEndpoints(ingressEndpoints))) {
       for (int i = 0; i < 100; i++) {
-        accountingClient.settle(aeronCluster);
+        accountingClient.reserve(aeronCluster);
       }
 
       while (true) {
@@ -56,12 +57,14 @@ public class AccountingClient implements EgressListener {
   @Override
   public void onMessage(long clusterSessionId, long timestamp, DirectBuffer buffer, int offset, int length, Header header) {
     SettlementResponse settlementResponse = SettlementResponse.deserialize(buffer, offset);
-    System.out.println("<- Settlement " + settlementResponse.getCorrelationId() + " was " + (settlementResponse.isSettled() ? "successful" : "not successful") + " " + Thread.currentThread().getName());
+    System.out.println("<- Reservation " + settlementResponse.getCorrelationId() + " was " + (settlementResponse.isSettled() ? "successful" : "not successful") + " " + Thread.currentThread().getName());
   }
 
-  private void settle(AeronCluster cluster) {
+  private void reserve(AeronCluster cluster) {
+
     ReservationEvent reservationEvent = new ReservationEvent(UUID.randomUUID(), AccountUtil.randomAccount(), AccountUtil.randomAccount(), AccountUtil.randomAmount().multiply(ONE_HUNDRED).longValue());
-    reservationEvent.serialize(this.sendBuffer, 0);
+    int eventTypeOffset = this.sendBuffer.putStringAscii(0, EventType.forEvent(reservationEvent).name());
+    reservationEvent.serialize(this.sendBuffer, eventTypeOffset);
 
     System.out.println(String.format("-> Sending message %s: %06d --- %d --> %06d",
         reservationEvent.getCorrelationId(),
@@ -69,7 +72,7 @@ public class AccountingClient implements EgressListener {
         reservationEvent.getAmount(),
         reservationEvent.getCreditorAccount()) + " " + Thread.currentThread().getName());
 
-    while (cluster.offer(this.sendBuffer, 0, reservationEvent.getSerializedLength()) < 0) {
+    while (cluster.offer(this.sendBuffer, 0, reservationEvent.getSerializedLength() + eventTypeOffset) < 0) {
       this.idleStrategy.idle(cluster.pollEgress());
     }
 
