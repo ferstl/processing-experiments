@@ -1,4 +1,4 @@
-package com.github.ferstl.processing.accounting;
+package com.github.ferstl.processing.client;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -9,6 +9,8 @@ import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.BackoffIdleStrategy;
 import org.agrona.concurrent.IdleStrategy;
+import com.github.ferstl.processing.accounting.AccountUtil;
+import com.github.ferstl.processing.accounting.AccountingResult;
 import com.github.ferstl.processing.cluster.ClusterNode;
 import com.github.ferstl.processing.event.codec.Reservation;
 import com.github.ferstl.processing.event.codec.codec.AccountingResultCodec;
