@@ -1,4 +1,4 @@
-package com.github.ferstl.processing;
+package com.github.ferstl.processing.accounting;
 
 import java.util.Arrays;
 import java.util.List;

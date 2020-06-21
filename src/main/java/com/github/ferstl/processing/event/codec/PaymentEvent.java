@@ -1,4 +1,4 @@
-package com.github.ferstl.processing.event;
+package com.github.ferstl.processing.event.codec;
 
 import java.math.BigDecimal;
 import java.util.UUID;

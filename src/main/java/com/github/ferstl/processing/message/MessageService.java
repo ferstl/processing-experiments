@@ -1,4 +1,4 @@
-package com.github.ferstl.processing;
+package com.github.ferstl.processing.message;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -6,7 +6,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import com.github.ferstl.processing.model.Payment;
 
 // Not thread-safe!
 public class MessageService {

@@ -1,12 +1,15 @@
-package com.github.ferstl.processing;
+package com.github.ferstl.processing.event.codec;
 
-public class Reservation {
+import java.util.UUID;
+
+public class Reservation extends ProcessingEvent {
 
   private final int debtorAccount;
   private final int creditorAccount;
   private final long amount;
 
-  public Reservation(int debtorAccount, int creditorAccount, long amount) {
+  public Reservation(UUID correlationId, int debtorAccount, int creditorAccount, long amount) {
+    super(correlationId);
     this.debtorAccount = debtorAccount;
     this.creditorAccount = creditorAccount;
     this.amount = amount;

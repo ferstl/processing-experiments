@@ -1,4 +1,4 @@
-package com.github.ferstl.processing;
+package com.github.ferstl.processing.message;
 
 import java.io.StringWriter;
 import java.math.BigDecimal;
@@ -8,7 +8,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import org.junit.jupiter.api.Test;
-import com.github.ferstl.processing.model.Payment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class JaxbTests {

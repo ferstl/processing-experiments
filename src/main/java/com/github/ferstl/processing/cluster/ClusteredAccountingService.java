@@ -1,12 +1,12 @@
-package com.github.ferstl.processing;
+package com.github.ferstl.processing.cluster;
 
 import org.agrona.DirectBuffer;
 import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.IdleStrategy;
-import com.github.ferstl.processing.event.EventType;
-import com.github.ferstl.processing.event.ReservationEvent;
-import com.github.ferstl.processing.event.SettlementResponse;
+import com.github.ferstl.processing.accounting.AccountingResult;
+import com.github.ferstl.processing.accounting.AccountingService;
+import com.github.ferstl.processing.event.codec.codec.AccountingResultCodec;
 import io.aeron.ExclusivePublication;
 import io.aeron.Image;
 import io.aeron.cluster.codecs.CloseReason;
@@ -18,15 +18,17 @@ import io.aeron.logbuffer.Header;
 
 public class ClusteredAccountingService implements ClusteredService {
 
+  private final AccountingResultCodec accountingResultCodec = new AccountingResultCodec();
+  private final EventDispatcher eventDispatcher = new EventDispatcher(new AccountingService());
+
   private Cluster cluster;
   private IdleStrategy idleStrategy;
-  private AccountingService accountingService;
+
 
   private final MutableDirectBuffer responseBuffer = new ExpandableDirectByteBuffer(4);
 
   @Override
   public void onStart(Cluster cluster, Image snapshotImage) {
-    this.accountingService = new AccountingService();
     this.cluster = cluster;
     this.idleStrategy = cluster.idleStrategy();
 
@@ -37,36 +39,26 @@ public class ClusteredAccountingService implements ClusteredService {
 
   @Override
   public void onSessionOpen(ClientSession session, long timestamp) {
-
+    System.out.println("Session opened: " + session.id());
   }
 
   @Override
   public void onSessionClose(ClientSession session, long timestamp, CloseReason closeReason) {
-
+    System.out.println("Session closed: " + session.id() + ", Reason " + closeReason);
   }
 
   @Override
   public void onSessionMessage(ClientSession session, long timestamp, DirectBuffer buffer, int offset, int length, Header header) {
-    String eventTypeName = buffer.getStringAscii(offset);
-    EventType eventType = EventType.valueOf(eventTypeName);
-    ReservationEvent reservationEvent = ReservationEvent.deserialize(buffer, offset + eventTypeName.length() + 4);
-    this.accountingService.reserve(
-        reservationEvent.getCorrelationId(),
-        reservationEvent.getDebtorAccount(),
-        reservationEvent.getCreditorAccount(),
-        reservationEvent.getAmount());
+    AccountingResult result = this.eventDispatcher.dispatch(buffer, offset);
 
-    System.out.println("Received " + eventType + ": " + reservationEvent.getCorrelationId());
     // session == null: recovery
     if (session != null) {
-      SettlementResponse settlementResponse = new SettlementResponse(reservationEvent.getCorrelationId(), true);
-      settlementResponse.serialize(this.responseBuffer, 0);
-
-      while (session.offer(this.responseBuffer, 0, settlementResponse.getSerializedLength()) < 0) {
+      int encodedLength = this.accountingResultCodec.encode(result, this.responseBuffer, 0);
+      System.out.println("<- Result for " + result.getCorrelationId() + " is " + result.getAccountingStatus());
+      while (session.offer(this.responseBuffer, 0, encodedLength) < 0) {
         this.idleStrategy.idle();
       }
     }
-
   }
 
   @Override

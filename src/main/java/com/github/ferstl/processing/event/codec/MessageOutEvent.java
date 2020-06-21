@@ -1,4 +1,4 @@
-package com.github.ferstl.processing.event;
+package com.github.ferstl.processing.event.codec;
 
 import java.util.UUID;
 import com.github.ferstl.processing.MessageTypeOutbound;

@@ -1,9 +1,9 @@
-package com.github.ferstl.processing;
+package com.github.ferstl.processing.accounting;
 
 import java.math.BigDecimal;
 import java.util.Random;
 import org.jetbrains.annotations.NotNull;
-import static com.github.ferstl.processing.AccountMasterdata.getRegularAccountsAsArray;
+import static com.github.ferstl.processing.accounting.AccountMasterdata.getRegularAccountsAsArray;
 
 public class AccountUtil {
 

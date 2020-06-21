@@ -1,10 +1,11 @@
-package com.github.ferstl.processing;
+package com.github.ferstl.processing.accounting;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import static com.github.ferstl.processing.AccountingStatus.RESERVATION_NOT_FOUND;
-import static com.github.ferstl.processing.AccountingStatus.SETTLED;
+import com.github.ferstl.processing.event.codec.Reservation;
+import static com.github.ferstl.processing.accounting.AccountingStatus.RESERVATION_NOT_FOUND;
+import static com.github.ferstl.processing.accounting.AccountingStatus.SETTLED;
 import static java.util.stream.Collectors.toMap;
 
 public class AccountingService {
@@ -31,20 +32,20 @@ public class AccountingService {
     }
   }
 
-  public AccountingResult reserve(UUID correlationId, int debtor, int creditor, long amount) {
-    Long totalAmount = this.accountBook.get(debtor);
+  public AccountingResult reserve(Reservation reservation) {
+    Long totalAmount = this.accountBook.get(reservation.getDebtorAccount());
     if (totalAmount == null) {
-      System.out.println("debtor: " + debtor);
-      return new AccountingResult(correlationId, AccountingStatus.UNKNOWN_ACCOUNT);
+      System.out.println("debtor: " + reservation.getDebtorAccount());
+      return new AccountingResult(reservation.getCorrelationId(), AccountingStatus.UNKNOWN_ACCOUNT);
     }
 
-    long newAmount = totalAmount - amount;
+    long newAmount = totalAmount - reservation.getAmount();
     if (newAmount >= 0) {
-      this.accountBook.put(debtor, newAmount);
-      this.reservations.put(correlationId, new Reservation(debtor, creditor, amount));
-      return new AccountingResult(correlationId, AccountingStatus.RESERVATION_OK);
+      this.accountBook.put(reservation.getDebtorAccount(), newAmount);
+      this.reservations.put(reservation.getCorrelationId(), reservation);
+      return new AccountingResult(reservation.getCorrelationId(), AccountingStatus.RESERVATION_OK);
     } else {
-      return new AccountingResult(correlationId, AccountingStatus.INSUFFICIENT_FUNDS);
+      return new AccountingResult(reservation.getCorrelationId(), AccountingStatus.INSUFFICIENT_FUNDS);
     }
   }
 

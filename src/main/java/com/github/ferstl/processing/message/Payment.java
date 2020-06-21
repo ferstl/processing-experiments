@@ -1,4 +1,4 @@
-package com.github.ferstl.processing.model;
+package com.github.ferstl.processing.message;
 
 import java.math.BigDecimal;
 import javax.xml.bind.annotation.XmlElement;

@@ -1,4 +1,4 @@
-package com.github.ferstl.processing.event;
+package com.github.ferstl.processing.event.codec;
 
 import java.util.UUID;
 
@@ -10,7 +10,7 @@ public abstract class ProcessingEvent {
     this.correlationId = correlationId;
   }
 
-  public UUID getCorrelationId() {
+  public final UUID getCorrelationId() {
     return this.correlationId;
   }
 }

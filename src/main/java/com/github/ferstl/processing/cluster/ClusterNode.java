@@ -1,4 +1,4 @@
-package com.github.ferstl.processing;
+package com.github.ferstl.processing.cluster;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

@@ -1,4 +1,4 @@
-package com.github.ferstl.processing;
+package com.github.ferstl.processing.accounting;
 
 import java.util.UUID;
 
@@ -10,5 +10,13 @@ public class AccountingResult {
   public AccountingResult(UUID correlationId, AccountingStatus accountingStatus) {
     this.correlationId = correlationId;
     this.accountingStatus = accountingStatus;
+  }
+
+  public UUID getCorrelationId() {
+    return this.correlationId;
+  }
+
+  public AccountingStatus getAccountingStatus() {
+    return this.accountingStatus;
   }
 }

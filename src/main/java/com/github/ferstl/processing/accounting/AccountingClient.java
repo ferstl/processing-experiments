@@ -1,4 +1,4 @@
-package com.github.ferstl.processing;
+package com.github.ferstl.processing.accounting;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -9,9 +9,10 @@ import org.agrona.ExpandableDirectByteBuffer;
 import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.BackoffIdleStrategy;
 import org.agrona.concurrent.IdleStrategy;
-import com.github.ferstl.processing.event.EventType;
-import com.github.ferstl.processing.event.ReservationEvent;
-import com.github.ferstl.processing.event.SettlementResponse;
+import com.github.ferstl.processing.cluster.ClusterNode;
+import com.github.ferstl.processing.event.codec.Reservation;
+import com.github.ferstl.processing.event.codec.codec.AccountingResultCodec;
+import com.github.ferstl.processing.event.codec.codec.ReservationCodec;
 import io.aeron.cluster.client.AeronCluster;
 import io.aeron.cluster.client.EgressListener;
 import io.aeron.driver.MediaDriver;
@@ -25,6 +26,10 @@ public class AccountingClient implements EgressListener {
 
   private final IdleStrategy idleStrategy = new BackoffIdleStrategy();
   private final MutableDirectBuffer sendBuffer = new ExpandableDirectByteBuffer();
+
+  private final ReservationCodec reservationCodec = new ReservationCodec();
+
+  private final AccountingResultCodec accountingResultCodec = new AccountingResultCodec();
 
   public static void main(String[] args) throws InterruptedException {
     int customerId = Integer.parseInt(System.getProperty("processing.clientId"));
@@ -56,23 +61,21 @@ public class AccountingClient implements EgressListener {
 
   @Override
   public void onMessage(long clusterSessionId, long timestamp, DirectBuffer buffer, int offset, int length, Header header) {
-    SettlementResponse settlementResponse = SettlementResponse.deserialize(buffer, offset);
-    System.out.println("<- Reservation " + settlementResponse.getCorrelationId() + " was " + (settlementResponse.isSettled() ? "successful" : "not successful") + " " + Thread.currentThread().getName());
+    AccountingResult accountingResult = this.accountingResultCodec.decode(buffer, offset);
+    System.out.println("<- Result for " + accountingResult.getCorrelationId() + " was " + accountingResult.getAccountingStatus() + " " + Thread.currentThread().getName());
   }
 
   private void reserve(AeronCluster cluster) {
+    Reservation reservation = new Reservation(UUID.randomUUID(), AccountUtil.randomAccount(), AccountUtil.randomAccount(), AccountUtil.randomAmount().multiply(ONE_HUNDRED).longValue());
+    int encodedLength = this.reservationCodec.encode(reservation, this.sendBuffer, 0);
 
-    ReservationEvent reservationEvent = new ReservationEvent(UUID.randomUUID(), AccountUtil.randomAccount(), AccountUtil.randomAccount(), AccountUtil.randomAmount().multiply(ONE_HUNDRED).longValue());
-    int eventTypeOffset = this.sendBuffer.putStringAscii(0, EventType.forEvent(reservationEvent).name());
-    reservationEvent.serialize(this.sendBuffer, eventTypeOffset);
+    System.out.println(String.format("-> Sending reservation %s: %06d --- %d --> %06d",
+        reservation.getCorrelationId(),
+        reservation.getDebtorAccount(),
+        reservation.getAmount(),
+        reservation.getCreditorAccount()) + " " + Thread.currentThread().getName());
 
-    System.out.println(String.format("-> Sending message %s: %06d --- %d --> %06d",
-        reservationEvent.getCorrelationId(),
-        reservationEvent.getDebtorAccount(),
-        reservationEvent.getAmount(),
-        reservationEvent.getCreditorAccount()) + " " + Thread.currentThread().getName());
-
-    while (cluster.offer(this.sendBuffer, 0, reservationEvent.getSerializedLength() + eventTypeOffset) < 0) {
+    while (cluster.offer(this.sendBuffer, 0, encodedLength) < 0) {
       this.idleStrategy.idle(cluster.pollEgress());
     }
 
