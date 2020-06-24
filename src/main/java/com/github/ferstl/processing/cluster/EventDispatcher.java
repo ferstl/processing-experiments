@@ -3,18 +3,27 @@ package com.github.ferstl.processing.cluster;
 import org.agrona.DirectBuffer;
 import com.github.ferstl.processing.accounting.AccountingResult;
 import com.github.ferstl.processing.accounting.AccountingService;
+import com.github.ferstl.processing.event.codec.CommunicationEvent;
 import com.github.ferstl.processing.event.codec.EventType;
 import com.github.ferstl.processing.event.codec.Reservation;
+import com.github.ferstl.processing.event.codec.codec.CommunicationEventCodec;
 import com.github.ferstl.processing.event.codec.codec.ReservationCodec;
+import com.github.ferstl.processing.messaging.MessagingService;
 
 public class EventDispatcher {
 
-  private final ReservationCodec reservationCodec;
+  private final int memberId;
   private final AccountingService accountingService;
+  private final MessagingService messagingService;
+  private final ReservationCodec reservationCodec;
+  private final CommunicationEventCodec communicationEventCodec;
 
-  public EventDispatcher(AccountingService accountingService) {
+  public EventDispatcher(int memberId, AccountingService accountingService, MessagingService messagingService) {
+    this.memberId = memberId;
     this.accountingService = accountingService;
+    this.messagingService = messagingService;
     this.reservationCodec = new ReservationCodec();
+    this.communicationEventCodec = new CommunicationEventCodec();
   }
 
 
@@ -27,7 +36,11 @@ public class EventDispatcher {
         Reservation reservation = this.reservationCodec.decode(buffer, offset);
         System.out.println("-> Received reservation " + reservation.getCorrelationId());
         return this.accountingService.reserve(reservation);
-
+      case COMMUNICATION:
+        CommunicationEvent communicationEvent = this.communicationEventCodec.decode(buffer, offset);
+        this.messagingService.communicated(communicationEvent);
+        // TODO Better Return type
+        return null;
       default:
         throw new IllegalArgumentException("Unknown event type: " + eventType);
     }

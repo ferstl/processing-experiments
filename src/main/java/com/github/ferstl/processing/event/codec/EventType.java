@@ -2,6 +2,7 @@ package com.github.ferstl.processing.event.codec;
 
 public enum EventType {
   RESERVATION,
+  COMMUNICATION,
   SETTLEMENT;
 
   public static <T extends ProcessingEvent> EventType forEvent(T event) {

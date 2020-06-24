@@ -7,6 +7,7 @@ import org.agrona.concurrent.IdleStrategy;
 import com.github.ferstl.processing.accounting.AccountingResult;
 import com.github.ferstl.processing.accounting.AccountingService;
 import com.github.ferstl.processing.event.codec.codec.AccountingResultCodec;
+import com.github.ferstl.processing.messaging.MessagingService;
 import io.aeron.ExclusivePublication;
 import io.aeron.Image;
 import io.aeron.cluster.codecs.CloseReason;
@@ -18,18 +19,26 @@ import io.aeron.logbuffer.Header;
 
 public class ClusteredAccountingService implements ClusteredService {
 
-  private final AccountingResultCodec accountingResultCodec = new AccountingResultCodec();
-  private final EventDispatcher eventDispatcher = new EventDispatcher(new AccountingService());
+  private final AccountingResultCodec accountingResultCodec;
+  private EventDispatcher eventDispatcher;
 
   private Cluster cluster;
   private IdleStrategy idleStrategy;
 
 
   private final MutableDirectBuffer responseBuffer = new ExpandableDirectByteBuffer(4);
+  private MessagingService messagingService;
+
+  public ClusteredAccountingService() {
+    this.accountingResultCodec = new AccountingResultCodec();
+  }
 
   @Override
   public void onStart(Cluster cluster, Image snapshotImage) {
     this.cluster = cluster;
+    int memberId = cluster.memberId();
+    this.messagingService = new MessagingService(cluster, memberId);
+    this.eventDispatcher = new EventDispatcher(memberId, new AccountingService(), this.messagingService);
     this.idleStrategy = cluster.idleStrategy();
 
     if (snapshotImage != null) {
@@ -50,6 +59,10 @@ public class ClusteredAccountingService implements ClusteredService {
   @Override
   public void onSessionMessage(ClientSession session, long timestamp, DirectBuffer buffer, int offset, int length, Header header) {
     AccountingResult result = this.eventDispatcher.dispatch(buffer, offset);
+
+    if (result != null) {
+      this.messagingService.handleAccountingResult(this.cluster.memberId(), result);
+    }
 
     // session == null: recovery
     if (session != null) {
