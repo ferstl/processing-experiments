@@ -68,7 +68,7 @@ public class ClusteredAccountingService implements ClusteredService {
     }
 
     // session == null: recovery
-    if (session != null) {
+    if (session != null && result != null) {
       int encodedLength = this.accountingResultCodec.encode(result, this.responseBuffer, 0);
       System.out.println("<- Result for " + result.getCorrelationId() + " is " + result.getAccountingStatus());
       while (session.offer(this.responseBuffer, 0, encodedLength) < 0) {
