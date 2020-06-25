@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.agrona.ExpandableArrayBuffer;
+import org.agrona.concurrent.BackoffIdleStrategy;
 import com.github.ferstl.processing.accounting.AccountingResult;
 import com.github.ferstl.processing.accounting.AccountingStatus;
 import com.github.ferstl.processing.event.codec.CommunicationEvent;
@@ -20,6 +21,7 @@ public class MessagingService {
   private final CommunicationEventCodec communicationEventCodec;
   private final ExpandableArrayBuffer sendBuffer;
   private final Map<String, AccountingResult> pendingResults;
+  private final BackoffIdleStrategy idleStrategy;
 
   public MessagingService(Cluster cluster, int memberId) {
     this.cluster = cluster;
@@ -27,6 +29,7 @@ public class MessagingService {
     this.communicationEventCodec = new CommunicationEventCodec();
     this.sendBuffer = new ExpandableArrayBuffer();
     this.pendingResults = new LinkedHashMap<>();
+    this.idleStrategy = new BackoffIdleStrategy();
   }
 
   public void handleAccountingResult(int memberId, AccountingResult accountingResult) {
@@ -35,9 +38,13 @@ public class MessagingService {
       System.out.println(String.format("Sending %s: %s", accountingResult.getCorrelationId(), accountingResult.getAccountingStatus()));
       CommunicationEvent communicationEvent = new CommunicationEvent(accountingResult.getCorrelationId(), accountingResult.getAccountingStatus());
       int encodedLength = this.communicationEventCodec.encode(communicationEvent, this.sendBuffer, 0);
-      this.cluster.offer(this.sendBuffer, 0, encodedLength);
+      while (this.cluster.offer(this.sendBuffer, 0, encodedLength) < 0) {
+        System.out.println("Cluster not available");
+        this.idleStrategy.idle();
+      }
     } else {
       // otherwise just buffer it
+      System.out.println(String.format("Member %d received %s: %s", this.memberId, accountingResult.getCorrelationId(), accountingResult.getAccountingStatus()));
       this.pendingResults.put(createKey(accountingResult), accountingResult);
     }
   }
