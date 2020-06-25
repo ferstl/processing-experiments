@@ -20,6 +20,9 @@ import io.aeron.logbuffer.Header;
 public class ClusteredAccountingService implements ClusteredService {
 
   private final AccountingResultCodec accountingResultCodec;
+
+  private final int memberId;
+
   private EventDispatcher eventDispatcher;
 
   private Cluster cluster;
@@ -29,16 +32,16 @@ public class ClusteredAccountingService implements ClusteredService {
   private final MutableDirectBuffer responseBuffer = new ExpandableDirectByteBuffer(4);
   private MessagingService messagingService;
 
-  public ClusteredAccountingService() {
+  public ClusteredAccountingService(int memberId) {
+    this.memberId = memberId;
     this.accountingResultCodec = new AccountingResultCodec();
   }
 
   @Override
   public void onStart(Cluster cluster, Image snapshotImage) {
     this.cluster = cluster;
-    int memberId = cluster.memberId();
-    this.messagingService = new MessagingService(cluster, memberId);
-    this.eventDispatcher = new EventDispatcher(memberId, new AccountingService(), this.messagingService);
+    this.messagingService = new MessagingService(cluster, this.memberId);
+    this.eventDispatcher = new EventDispatcher(this.memberId, new AccountingService(), this.messagingService);
     this.idleStrategy = cluster.idleStrategy();
 
     if (snapshotImage != null) {

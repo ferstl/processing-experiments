@@ -77,7 +77,7 @@ public class ClusterNode {
             .aeronDirectoryName(aeronDirName)
             .archiveContext(aeronArchiveContext.clone())
             .clusterDir(baseDir.resolve("service").toFile())
-            .clusteredService(new ClusteredAccountingService())
+            .clusteredService(new ClusteredAccountingService(nodeId))
             .errorHandler(errorHandler("Clustered Service"));
 
     try (ClusteredMediaDriver clusteredMediaDriver = ClusteredMediaDriver.launch(mediaDriverContext, archiveContext, consensusModuleContext);
