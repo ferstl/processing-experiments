@@ -35,7 +35,7 @@ public class InboundMessageCodec implements MessageCodec<InboundMessage> {
   public InboundMessage decode(DirectBuffer buffer, int offset) {
     int dataLength = buffer.getInt(offset + DATA_LENGTH_OFFSET);
     byte[] data = new byte[dataLength];
-    buffer.getBytes(DATA_OFFSET, data);
+    buffer.getBytes(offset + DATA_OFFSET, data);
 
     return new InboundMessage(
         new UUID(buffer.getLong(offset + CORRELATION_ID_PART1_OFFSET), buffer.getLong(offset + CORRELATION_ID_PART2_OFFSET)),

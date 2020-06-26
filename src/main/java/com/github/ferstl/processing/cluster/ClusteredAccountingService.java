@@ -64,7 +64,7 @@ public class ClusteredAccountingService implements ClusteredService {
     AccountingResult result = this.eventDispatcher.dispatch(buffer, offset);
 
     if (result != null) {
-      this.messagingService.handleAccountingResult(this.cluster.memberId(), result);
+      this.messagingService.handleAccountingResult(this.cluster.memberId(), result, false);
     }
 
     // session == null: recovery
