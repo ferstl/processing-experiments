@@ -2,7 +2,6 @@ package com.github.ferstl.processing.accounting;
 
 import java.math.BigDecimal;
 import java.util.Random;
-import org.jetbrains.annotations.NotNull;
 import static com.github.ferstl.processing.accounting.AccountMasterdata.getRegularAccountsAsArray;
 
 public class AccountUtil {
@@ -30,7 +29,6 @@ public class AccountUtil {
     }
   }
 
-  @NotNull
   public static BigDecimal randomAmount() {
     return new BigDecimal(amounts[random.nextInt(amounts.length)]);
   }

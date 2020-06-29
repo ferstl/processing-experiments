@@ -10,7 +10,7 @@ import org.agrona.MutableDirectBuffer;
 import org.agrona.concurrent.BackoffIdleStrategy;
 import org.agrona.concurrent.IdleStrategy;
 import com.github.ferstl.processing.accounting.AccountingResult;
-import com.github.ferstl.processing.cluster.ClusterNode;
+import com.github.ferstl.processing.cluster.PortUtil;
 import com.github.ferstl.processing.event.codec.InboundMessage;
 import com.github.ferstl.processing.event.codec.Reservation;
 import com.github.ferstl.processing.event.codec.codec.AccountingResultCodec;
@@ -122,7 +122,7 @@ public class AccountingClient implements EgressListener {
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < hostnames.size(); i++) {
       sb.append(i).append('=');
-      sb.append(hostnames.get(i)).append(':').append(ClusterNode.calculatePort(i, CLIENT_FACING_PORT_OFFSET));
+      sb.append(hostnames.get(i)).append(':').append(PortUtil.calculatePort(i, CLIENT_FACING_PORT_OFFSET));
       sb.append(',');
     }
 
