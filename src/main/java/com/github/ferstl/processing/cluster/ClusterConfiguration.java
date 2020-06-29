@@ -7,6 +7,7 @@ import java.util.List;
 import org.agrona.ErrorHandler;
 import org.agrona.concurrent.ShutdownSignalBarrier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import io.aeron.ChannelUriStringBuilder;
@@ -15,6 +16,7 @@ import io.aeron.archive.Archive;
 import io.aeron.archive.ArchiveThreadingMode;
 import io.aeron.archive.client.AeronArchive;
 import io.aeron.cluster.ConsensusModule;
+import io.aeron.cluster.service.ClusteredService;
 import io.aeron.cluster.service.ClusteredServiceContainer;
 import io.aeron.driver.MediaDriver;
 import io.aeron.driver.MinMulticastFlowControlSupplier;
@@ -103,25 +105,31 @@ public class ClusterConfiguration {
   }
 
   @Bean
-  public ClusteredServiceContainer.Context clusteredServiceContainerContext() {
+  public ClusteredServiceContainer.Context clusteredServiceContainerContext(ClusteredService service) {
     return new ClusteredServiceContainer.Context()
         .aeronDirectoryName(aeronDirectoryName())
         .archiveContext(aeronArchiveContext().clone())
         .clusterDir(baseDir().resolve("service").toFile())
-        .clusteredService(new ClusteredAccountingService(this.nodeId))
+        .clusteredService(service)
         .errorHandler(errorHandler("Clustered Service"));
   }
 
   @Bean
-  public ClusterNode clusterNode() {
+  public ClusterNode clusterNode(ClusteredServiceContainer.Context serviceContainerContext) {
     return new ClusterNode(
         this.nodeId,
         mediaDriverContext(),
         archiveContext(),
         consensusModuleContext(),
-        clusteredServiceContainerContext(),
+        serviceContainerContext,
         shutdownSignalBarrier()
     );
+  }
+
+  @Bean
+  @ConditionalOnProperty(name = "cluster.node.type", havingValue = "accounting")
+  public ClusteredService clusteredAccountingService() {
+    return new ClusteredAccountingService(this.nodeId);
   }
 
   private static ErrorHandler errorHandler(String context) {
